@@ -7,7 +7,22 @@
 
 void run()
 {
-	const int32_t equip{200};
+	enum Equip: int32_t
+	{
+		GOLLUX = 150,
+		CRA = 150,
+		ABSOLAB = 160,
+		ARCANE = 200
+	};
+
+	enum SampleSize : int64_t
+	{
+		TEST = 32ULL,
+		SMALL = 32'000ULL,
+		LARGE = 32'000'000ULL
+	};
+
+	const int32_t equip{Equip::ARCANE};
 	const int8_t start_star{0};
 	const int8_t goal_star{22};
 
@@ -30,7 +45,7 @@ void run()
 	const int32_t concurrency{32};
 	sf::Engine engine(concurrency);
 
-	sf::Output results = engine.run(input, 32'000'000ULL);
+	sf::Output results = engine.run(input, SampleSize::SMALL);
 	std::cout << results << '\n';
 }
 
