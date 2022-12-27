@@ -14,6 +14,7 @@ enum Equip: int32_t
 	ETERNAL = 250
 };
 
+
 enum SampleSize : int64_t
 {
 	TEST   = 0x1ULL << 10,
@@ -22,10 +23,9 @@ enum SampleSize : int64_t
 	LARGE  = 0x1ULL << 25
 };
 
+
 void run()
 {
-
-
 	const int32_t equip{Equip::ETERNAL};
 	const int8_t start_star{0};
 	const int8_t goal_star{22};
