@@ -12,7 +12,8 @@ void run()
 		GOLLUX = 150,
 		CRA = 150,
 		ABSOLAB = 160,
-		ARCANE = 200
+		ARCANE = 200,
+		ETERNAL = 250
 	};
 
 	enum SampleSize : int64_t
