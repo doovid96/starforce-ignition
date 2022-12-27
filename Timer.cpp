@@ -14,6 +14,6 @@ Timer::Timer(std::string description)
 
 Timer::~Timer()
 {
-	const double count = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+	const double count = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
 	std::cout << '[' << description << ']' << count << '\n';
 }
