@@ -1,12 +1,7 @@
 CXX=g++
 CFLAGS=-std=c++23 -lpthread -O3 -Wall -Wextra
 
-all: starforce
-
-run: starforce
-	./starforce.exe
-
-starforce: driver.o timer.o starforce.o
+starforce.exe: driver.o timer.o starforce.o
 	$(CXX) $(CFLAGS) -o starforce driver.o timer.o starforce.o
 
 driver.o: driver.cpp
