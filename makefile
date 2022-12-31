@@ -1,15 +1,18 @@
-CXX=g++
-CXXFLAGS=-std=c++23 -O3 -Wall -Wextra
-LDFLAGS=-lpthread
+SRC_DIR := ./src
+OBJ_DIR := ./obj
+SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
+OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+CXX := g++
+CXXFLAGS := -std=c++23 -O3 -Wall -Wextra
+LDFLAGS := -lpthread
+INCLUDE := ./include
 
-starforce.exe: driver.o timer.o starforce.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ driver.o timer.o starforce.o
+starforce.exe: $(OBJ_FILES)
+	$(CXX) $(LDFLAGS) -o $@ $^
 
-driver.o: driver.cpp
-	$(CXX) $(CXXFLAGS) -c driver.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) -I$(INCLUDE) $(CXXFLAGS) -c -o $@ $<
 
-starforce.o: starforce.cpp
-	$(CXX) $(CXXFLAGS) -c starforce.cpp
-
-timer.o: timer.cpp
-	$(CXX) $(CXXFLAGS) -c timer.cpp
+test:
+	echo $(SRC_FILES)
+	echo $(OBJ_FILES)
