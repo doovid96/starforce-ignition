@@ -3,7 +3,6 @@
 
 #include "Timer.hpp"
 
-
 #include <iostream>
 #include <iomanip>
 #include <cstdint>
