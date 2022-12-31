@@ -1,14 +1,15 @@
 CXX=g++
-CFLAGS=-std=c++23 -lpthread -O3 -Wall -Wextra
+CXXFLAGS=-std=c++23 -O3 -Wall -Wextra
+LDFLAGS=-lpthread
 
 starforce.exe: driver.o timer.o starforce.o
-	$(CXX) $(CFLAGS) -o starforce driver.o timer.o starforce.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ driver.o timer.o starforce.o
 
 driver.o: driver.cpp
-	$(CXX) $(CFLAGS) -c driver.cpp
+	$(CXX) $(CXXFLAGS) -c driver.cpp
 
 starforce.o: starforce.cpp
-	$(CXX) $(CFLAGS) -c starforce.cpp
+	$(CXX) $(CXXFLAGS) -c starforce.cpp
 
 timer.o: timer.cpp
-	$(CXX) $(CFLAGS) -c timer.cpp
+	$(CXX) $(CXXFLAGS) -c timer.cpp
