@@ -1,186 +1,8 @@
-#include "Starforce.hpp"
+#include "Engine.hpp"
 
 
 namespace sf
 {
-
-
-std::ostream& operator<<(std::ostream& os, const EventFlags& event_flags)
-{
-	return os << "DISCOUNT " << event_flags.discount << "\nPASS " << event_flags.pass << '\n';
-}
-
-
-EventFlags::EventFlags(std::initializer_list<EventType> event_list)
-{
-	for (EventType event_type : event_list)
-	{
-		switch(event_type)
-		{
-		case EventType::NONE:
-			discount = false;
-			pass = false;
-			break;
-		case EventType::DISCOUNT:
-			discount = true;
-			break;
-		case EventType::PASS:
-			pass = true;
-			break;
-		case EventType::SHINING:
-			discount = true;
-			pass = true;
-		}
-	}
-}
-
-
-bool EventFlags::get_discount() const
-{
-	return discount;
-}
-
-
-bool EventFlags::get_pass() const
-{
-	return pass;
-}
-
-
-std::ostream& operator<<(std::ostream& os, const GuardFlags& guard_flags)
-{
-	for (std::size_t star{12}; star < 12 + guard_flags.flags.size(); ++star)
-	{
-		os << star << ' ' << static_cast<int>(guard_flags.flags.test(star + GuardFlags::offset)) << '\n';
-	}
-	return os;
-}
-
-
-std::ostream& operator<<(std::ostream& os, const CatchFlags& catch_flags)
-{
-	for (std::size_t star{}; star < catch_flags.flags.size(); ++star)
-	{
-		os << star << ' ' << static_cast<int>(catch_flags.flags.test(star)) << '\n';
-	}
-	return os;
-}
-
-
-GuardFlags::GuardFlags(std::initializer_list<int8_t> list)
-{
-	for (const int8_t star : list)
-	{
-		flags.set(star + offset);
-	}
-}
-
-GuardFlags::GuardFlags(const Flags flag)
-{
-	if (flag == Flags::ALL)
-	{
-		flags = 0x1FU;
-	}
-}
-
-
-bool GuardFlags::operator[](const int8_t star)
-{
-	return flags.test(star + offset);
-}
-
-
-CatchFlags::CatchFlags(std::initializer_list<int8_t> list)
-{
-	for (const int8_t star : list)
-	{
-		flags.set(star);
-	}
-}
-
-CatchFlags::CatchFlags(const Flags flag)
-{
-	if (flag == Flags::ALL)
-	{
-		flags = 0x1FFFFFFU;
-	}
-}
-
-
-bool CatchFlags::operator[](const int8_t star)
-{
-	return flags.test(star);
-}
-
-
-Input::Input(
-	const int32_t equipment_level,
-	const int8_t start_star,
-	const int8_t goal_star,
-	const MVPType mvp,
-	const EventFlags event_flags,
-	const GuardFlags guard_flags,
-	const CatchFlags catch_flags)
-	: equipment_level{equipment_level}
-	, start_star{start_star}
-	, goal_star{goal_star}
-	, mvp{mvp}
-	, event_flags{event_flags}
-	, guard_flags{guard_flags}
-	, catch_flags{catch_flags}
-{}
-
-
-int32_t Input::get_equipment_level() const
-{
-	return equipment_level;
-}
-
-
-int8_t Input::get_start() const
-{
-	return start_star;
-}
-
-
-int8_t Input::get_goal() const
-{
-	return goal_star;
-}
-
-
-MVPType Input::get_mvp() const
-{
-	return mvp;
-}
-
-
-EventFlags Input::get_events() const
-{
-	return event_flags;
-}
-
-
-GuardFlags Input::get_guards() const
-{
-	return guard_flags;
-}
-
-
-CatchFlags Input::get_catches() const
-{
-	return catch_flags;
-}
-
-
-Output& Output::operator+=(const Output& other)
-{
-	iterations += other.iterations;
-	mesos += other.mesos;
-	booms += other.booms;
-	chance_times += other.chance_times;
-	return *this;
-}
 
 
 Engine::Engine(const int32_t concurrency)
@@ -195,7 +17,6 @@ Engine::Engine(const int32_t concurrency)
 
 void Engine::validate(const Input& input)
 {
-	Timer timer{"validate"};
 	const int32_t level = input.get_equipment_level();
 	if (level < 0 || level > 300)
 	{
@@ -263,7 +84,6 @@ int8_t Engine::star_limit(const int32_t equipment_level)
 
 void Engine::init(const Input& input)
 {
-	Timer timer{"init"};
 	calculate_costs(input);
 	calculate_rates(input);
 }
@@ -425,7 +245,6 @@ std::ostream& operator<<(std::ostream& os, const Engine& engine)
 	std::array<std::string_view, 6> headers = {"STAR", "DEFAULT", "CHANCE", "UP", "STAY", "DOWN"};
 	for (int i{}; const std::string_view header : headers)
 	{
-		
 		os << std::setw(widths[i]) << header;
 		++i;
 	}
@@ -445,11 +264,11 @@ std::ostream& operator<<(std::ostream& os, const Engine& engine)
 
 Output Engine::run(const Input& input, const int64_t iterations)
 {
+	Timer timer{"run"};
 	validate(input);
 	init(input);
 	std::cout << *this << '\n';
 	std::vector<std::pair<std::thread, Output>> workers(concurrency);
-
 	for (auto& [thread, output] : workers)
 	{
 		thread = std::thread(
@@ -463,16 +282,13 @@ Output Engine::run(const Input& input, const int64_t iterations)
 			stay_rates,
 			down_rates);
 	}
+	Output results;
 	for (auto& [thread, output] : workers)
 	{
 		thread.join();
+		results += output;
 	}
-	Output result;
-	for (const auto& [thread, output] : workers)
-	{
-		result += output;
-	}
-	return result;
+	return results;
 }
 
 
@@ -480,22 +296,24 @@ void Engine::iterate(
 	Output& result,
 	const Input input,
 	const int64_t iterations,
-	std::vector<int64_t> default_costs,
-	std::vector<int64_t> chance_time_costs,
-	std::vector<double> up,
-	std::vector<double> stay,
-	std::vector<double> down)
+	const std::vector<int64_t> default_costs,
+	const std::vector<int64_t> chance_time_costs,
+	const std::vector<double> up,
+	const std::vector<double> stay,
+	const std::vector<double> down)
 {
 	std::default_random_engine engine{std::random_device{}()};
 	std::uniform_real_distribution<double> real_distribution{0.0, 1.0};
-	Output output{iterations, 0ULL, 0ULL, 0ULL};
 	for (int64_t i{}; i < iterations; ++i)
 	{
 		int8_t star{input.get_start()};
 		bool down_flag{false};
+		int64_t mesos{};
+		int64_t booms{};
+		int64_t chance_times{};
 		while (star < input.get_goal())
 		{
-			output.mesos += default_costs[star];
+			mesos += default_costs[star];
 			const double random = real_distribution(engine);
 			if (random <= up[star])
 			{
@@ -510,8 +328,8 @@ void Engine::iterate(
 			{
 				if (down_flag)
 				{
-					output.mesos += chance_time_costs[star-1];
-					++output.chance_times;
+					mesos += chance_time_costs[star-1];
+					++chance_times;
 					down_flag = false;
 				}
 				else
@@ -524,21 +342,22 @@ void Engine::iterate(
 			{
 				star = 12;
 				down_flag = false;
-				++output.booms;
+				++booms;
 			}
 		}
+		if (mesos / 1'000'000'000ULL < result.meso_histogram.size())
+		{
+			++result.meso_histogram.at(mesos/1'000'000'000ULL);
+		}
+		if (booms < result.boom_histogram.size())
+		{
+			++result.boom_histogram.at(booms);
+		}
+		result.mesos += mesos;
+		result.booms += booms;
+		result.chance_times += chance_times;
 	}
-	result = output;
-}
-
-
-std::ostream& operator<<(std::ostream& os, const Output& output)
-{
-	os << "Iterations: " << output.iterations << '\n';
-	os << "Mesos: " << std::fixed << output.mesos / static_cast<double>(output.iterations) << '\n';
-	os << "Booms: " << std::fixed << output.booms / static_cast<double>(output.iterations) << '\n';
-	os << "Chance Times: " << std::fixed << output.chance_times / static_cast<double>(output.iterations) << '\n';
-	return os;
+	result.iterations = iterations;
 }
 
 

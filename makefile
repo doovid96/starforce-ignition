@@ -1,17 +1,24 @@
-SRC_DIR := ./src
-OBJ_DIR := ./obj
-SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
-OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+SRC_DIR := ./src/
+OBJ_DIR := ./obj/
+INC_DIR := ./include/
+SRC_FILES := $(wildcard $(SRC_DIR)*.cpp)
+OBJ_FILES := $(SRC_FILES:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
 CXX := g++
 CXXFLAGS := -std=c++23 -O3 -Wall -Wextra
 LDFLAGS := -lpthread
-INCLUDE := ./include
+INCLUDES := -I./include/
+TARGET := starforce.exe
 
-starforce.exe: $(OBJ_FILES)
+all: $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
+
+$(TARGET): $(OBJ_FILES)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) -I$(INCLUDE) $(CXXFLAGS) -c -o $@ $<
+$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -c -o $@ $<
 
 test:
 	echo $(SRC_FILES)
