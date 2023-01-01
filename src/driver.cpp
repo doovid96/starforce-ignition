@@ -41,7 +41,7 @@ void run()
 
 	sf::Input input{equip, start_star, goal_star, mvp, event_flags, guard_flags, catch_flags};
 
-	const int32_t concurrency{32};
+	const int32_t concurrency{4};
 	sf::Engine engine(concurrency);
 
 	sf::Output output = engine.run(input, SMALL);
