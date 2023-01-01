@@ -78,6 +78,7 @@ int8_t Engine::star_limit(const int32_t equipment_level)
 	{
 		throw std::out_of_range("Unable to calculate star limit for equipment requiting a character level above 300.");
 	}
+	std::cout << "Star limit: " << static_cast<int>(limit) << '\n';
 	return limit;
 }
 
@@ -245,18 +246,18 @@ std::ostream& operator<<(std::ostream& os, const Engine& engine)
 	std::array<std::string_view, 6> headers = {"STAR", "DEFAULT", "CHANCE", "UP", "STAY", "DOWN"};
 	for (int i{}; const std::string_view header : headers)
 	{
-		os << std::setw(widths[i]) << header;
+		os << std::setw(widths.at(i)) << header;
 		++i;
 	}
 	os << '\n';
 	for (std::size_t i{}; i < engine.default_costs.size(); ++i)
 	{
 		os  << std::setw(widths[0]) << i
-			<< std::setw(widths[1]) << engine.default_costs[i]
-			<< std::setw(widths[2]) << engine.chance_time_costs[i]
-			<< std::setw(widths[3]) << engine.up_rates[i]
-			<< std::setw(widths[4]) << engine.stay_rates[i]
-			<< std::setw(widths[5]) << engine.down_rates[i] << '\n';
+			<< std::setw(widths[1]) << engine.default_costs.at(i)
+			<< std::setw(widths[2]) << engine.chance_time_costs.at(i)
+			<< std::setw(widths[3]) << engine.up_rates.at(i)
+			<< std::setw(widths[4]) << engine.stay_rates.at(i)
+			<< std::setw(widths[5]) << engine.down_rates.at(i) << '\n';
 	}
 	return os;
 }
@@ -264,7 +265,6 @@ std::ostream& operator<<(std::ostream& os, const Engine& engine)
 
 Output Engine::run(const Input& input, const int64_t iterations)
 {
-	Timer timer{"run"};
 	validate(input);
 	init(input);
 	std::cout << *this << '\n';

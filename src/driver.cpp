@@ -35,15 +35,18 @@ void run()
 	const sf::GuardFlags guard_flags{sf::Flags::NONE};
 	const sf::CatchFlags catch_flags{17, 18, 19, 20, 21};
 
+	std::cout << event_flags << '\n';
+	std::cout << guard_flags << '\n';
+	std::cout << catch_flags << '\n';
+
 	sf::Input input{equip, start_star, goal_star, mvp, event_flags, guard_flags, catch_flags};
 
 	const int32_t concurrency{32};
 	sf::Engine engine(concurrency);
 
 	sf::Output output = engine.run(input, SMALL);
-	std::ofstream file("results.csv");
+	std::ofstream file{"out.csv"};
 	file << output << '\n';
-
 }
 
 
