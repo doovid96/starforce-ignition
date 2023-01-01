@@ -119,7 +119,7 @@ void Engine::calculate_costs(const Input& input)
 	{
 		if (guard_flags[star])
 		{
-			default_costs[star] += base_costs[star];
+			default_costs.at(star) += base_costs.at(star);
 		}
 	}
 	if (input.get_events().get_pass())
@@ -174,15 +174,15 @@ std::vector<int64_t> Engine::calculate_base_costs(const Input& input)
 	};
 	for (int8_t star{}; star < goal; ++star)
 	{
-		base_costs[star] = formula(star, level, 1.0, 2'500);
+		base_costs.at(star) = formula(star, level, 1.0, 2'500);
 	}
 	for (int8_t star{10}; star < goal; ++star)
 	{
-		base_costs[star] = formula(star, level, 2.7, 40'000);
+		base_costs.at(star) = formula(star, level, 2.7, 40'000);
 	}
 	for (int8_t star{15}; star < goal; ++star)
 	{
-		base_costs[star] = formula(star, level, 2.7, 20'000);
+		base_costs.at(star) = formula(star, level, 2.7, 20'000);
 	}
 	return base_costs;
 }
@@ -203,10 +203,10 @@ void Engine::calculate_rates(const Input& input)
 	{
 		if (catch_flags[star])
 		{
-			const double previous_up{up_rates[star]};
-			up_rates[star] *= 1.045;
-			stay_rates[star] = (stay_rates[star] / (1.0 - previous_up)) * (1.0 - up_rates[star]);
-			down_rates[star] = (down_rates[star] / (1.0 - previous_up)) * (1.0 - up_rates[star]);
+			const double previous_up{up_rates.at(star)};
+			up_rates.at(star) *= 1.045;
+			stay_rates.at(star) = (stay_rates.at(star) / (1.0 - previous_up)) * (1.0 - up_rates.at(star));
+			down_rates.at(star) = (down_rates.at(star) / (1.0 - previous_up)) * (1.0 - up_rates.at(star));
 		}
 	}
 	std::transform(stay_rates.cbegin(), stay_rates.cend(), up_rates.cbegin(), stay_rates.begin(), std::plus<double>());
@@ -217,7 +217,7 @@ void Engine::calculate_rates(const Input& input)
 	{
 		if (guard_flags[star])
 		{
-			down_rates[star] = 1.0;
+			down_rates.at(star) = 1.0;
 		}
 	}
 	if (input.get_events().get_pass())
@@ -313,18 +313,18 @@ void Engine::iterate(
 		int64_t chance_times{};
 		while (star < input.get_goal())
 		{
-			mesos += default_costs[star];
+			mesos += default_costs.at(star);
 			const double random = real_distribution(engine);
-			if (random <= up[star])
+			if (random <= up.at(star))
 			{
 				++star;
 				down_flag = false;
 			}
-			else if (random <= stay[star])
+			else if (random <= stay.at(star))
 			{
 				down_flag = false;
 			}
-			else if (random <= down[star])
+			else if (random <= down.at(star))
 			{
 				if (down_flag)
 				{
@@ -344,14 +344,6 @@ void Engine::iterate(
 				down_flag = false;
 				++booms;
 			}
-		}
-		if (mesos / 1'000'000'000ULL < result.meso_histogram.size())
-		{
-			++result.meso_histogram.at(mesos/1'000'000'000ULL);
-		}
-		if (booms < result.boom_histogram.size())
-		{
-			++result.boom_histogram.at(booms);
 		}
 		result.mesos += mesos;
 		result.booms += booms;

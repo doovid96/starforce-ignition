@@ -2,6 +2,7 @@
 #include "Engine.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <cstdint>
 
 enum Equip: int32_t
@@ -29,17 +30,9 @@ void run()
 	const int32_t equip{ARCANE};
 	const int8_t start_star{0};
 	const int8_t goal_star{22};
-
 	const sf::MVPType mvp{sf::MVPType::RED};
-
 	const sf::EventFlags event_flags{sf::EventType::NONE};
-	std::cout << event_flags << '\n';
-
-	//const sf::GuardFlags guard_flags{12, 13, 14, 15, 16};
 	const sf::GuardFlags guard_flags{sf::Flags::NONE};
-
-	//const sf::CatchFlags catch_flags{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
-	//const sf::CatchFlags catch_flags{sf::Flags::NONE};
 	const sf::CatchFlags catch_flags{17, 18, 19, 20, 21};
 
 	sf::Input input{equip, start_star, goal_star, mvp, event_flags, guard_flags, catch_flags};
@@ -47,8 +40,9 @@ void run()
 	const int32_t concurrency{32};
 	sf::Engine engine(concurrency);
 
-	sf::Output output = engine.run(input, LARGE);
-	std::cout << output << '\n';
+	sf::Output output = engine.run(input, SMALL);
+	std::ofstream file("results.csv");
+	file << output << '\n';
 
 }
 
